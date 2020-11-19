@@ -10,9 +10,10 @@ import java.util.Arrays;
 
 class DatasetCSV {
 	ArrayList<ArrayList<Double>> data = new ArrayList<ArrayList<Double>>();
-	ArrayList<ArrayList<String>> class_labels = new ArrayList<ArrayList<String>>();
+	ArrayList<String> class_labels = new ArrayList<String>();
 	String[] feature_labels;
 
+	/* constructor takes filename */
 	DatasetCSV(String filename) {
 		Path path = Paths.get(filename);
 
@@ -32,7 +33,7 @@ class DatasetCSV {
 						try {
 							features.add(Double.parseDouble(s));
 						} catch (NumberFormatException e) {
-							class_labels.add(new ArrayList<String>(Arrays.asList(s)));
+							class_labels.add(s);
 						}
 					}
 
@@ -53,7 +54,7 @@ class DatasetCSV {
 		return data;
 	}
 
-	public ArrayList<ArrayList<String>> getClassLabels() {
+	public ArrayList<String> getClassLabels() {
 		return class_labels;
 	}
 
