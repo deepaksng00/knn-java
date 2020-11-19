@@ -6,9 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths; 
 import java.util.ArrayList; 
 import java.util.List;
+import java.util.Arrays;
 
 class DatasetCSV {
 	ArrayList<ArrayList<Double>> data = new ArrayList<ArrayList<Double>>();
+	ArrayList<ArrayList<String>> class_labels = new ArrayList<ArrayList<String>>();
+	String[] feature_labels;
 
 	DatasetCSV(String filename) {
 		Path path = Paths.get(filename);
@@ -16,29 +19,44 @@ class DatasetCSV {
 		try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.US_ASCII)) {
 			String line = br.readLine();
 
+			int lineCount = 0;
+
 			while (line != null) {
-				String[] feature_values = line.split(",");
-				ArrayList<Double> features = new ArrayList<Double>();
-				
-				for (String s : feature_values) {
-					try {
-						features.add(Double.parseDouble(s));
-					} catch (NumberFormatException e) {
+				lineCount++;
 
+				if(lineCount != 1) {
+					String[] feature_values = line.split(",");
+					ArrayList<Double> features = new ArrayList<Double>();
+					
+					for (String s : feature_values) {
+						try {
+							features.add(Double.parseDouble(s));
+							data.add(features);
+						} catch (NumberFormatException e) {
+							class_labels.add(new ArrayList<String>(Arrays.asList(s)));
+						}
+
+						line = br.readLine();
 					}
+				} else {
+					feature_labels = line.split(",");
+					line = br.readLine();
 				}
-
-				data.add(features);
-				line = br.readLine();
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-
-		data.remove(0);
 	}
 
-	public ArrayList<ArrayList<Double>> getData() {
+	public ArrayList<ArrayList<Double>> getExamples() {
 		return data;
+	}
+
+	public ArrayList<ArrayList<String>> getClassLabels() {
+		return class_labels;
+	}
+
+	public String[] getFeatureLabels() {
+		return feature_labels;
 	}
 }

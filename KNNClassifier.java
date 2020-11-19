@@ -1,6 +1,6 @@
 // class KNNClassifier {
-// 	double[][] training_examples; // storing training examples for the training of the classifier
-// 	double[][] training_labels; // storing class labels related to the training examples
+// 	ArrayList<ArrayList<Double>> training_examples; // storing training examples for the training of the classifier
+// 	ArrayList<ArrayList<String>> training_labels; // storing class labels related to the training examples
 // 	int k; // stores hyperparameter "k" nearest neighbours
 
 // 	KNNClassifier(String[][] training_examples, String[][] training_labels, int k) {
