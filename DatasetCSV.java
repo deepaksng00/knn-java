@@ -27,17 +27,18 @@ class DatasetCSV {
 				if(lineCount != 1) {
 					String[] feature_values = line.split(",");
 					ArrayList<Double> features = new ArrayList<Double>();
-					
+
 					for (String s : feature_values) {
 						try {
 							features.add(Double.parseDouble(s));
-							data.add(features);
 						} catch (NumberFormatException e) {
 							class_labels.add(new ArrayList<String>(Arrays.asList(s)));
 						}
-
-						line = br.readLine();
 					}
+
+					data.add(features);
+
+					line = br.readLine();
 				} else {
 					feature_labels = line.split(",");
 					line = br.readLine();
