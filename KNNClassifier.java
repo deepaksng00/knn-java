@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 class KNNClassifier {
 	public ArrayList<ArrayList<Double>> training_examples; // storing training examples for the training of the classifier
@@ -94,31 +96,33 @@ class KNNClassifier {
 		}
 	}
 
-	public ArrayList<ArrayList<String>> predict(ArrayList<ArrayList<Double>> test_examples) {
+	public ArrayList<String> predict(ArrayList<ArrayList<Double>> test_examples) {
 		standardiseData(test_examples);
 
-		ArrayList<ArrayList<String>> predictions = new ArrayList<ArrayList<String>>();
+		ArrayList<String> predictions = new ArrayList<String>();
 
-		for(int row_index = 0; row_index < test_examples.size; row_index++) {
-			ArrayList<String> prediction = predict_row(test_examples.get(i), row_index);
+		for(int row_index = 0; row_index < test_examples.size(); row_index++) {
+			String prediction = predict_row(test_examples.get(row_index), row_index);
 			predictions.add(prediction);
 		}
 
 		return predictions;
 	}
 
-	private ArrayList<String> predict_row(ArrayList<Double> this_test_example, int row_index) {
-		ArrayList<Double> distances = findEuclidianDistances(this_test_example, row_index);
-		
+	private String predict_row(ArrayList<Double> this_test_example, int row_index) {
+		ArrayList<Double[]> distances = findEuclidianDistances(this_test_example, row_index);
+		ArrayList<Double[]> sorted_with_indicies = find_nn_indicies(distances);
+		return make_prediction(sorted_with_indicies);
 	}
 
-	private ArrayList<Double> findEuclidianDistances(ArrayList<Double> this_test_example, int row_index) {
-		ArrayList<Double> distances = new ArrayList<Double>();
+	private ArrayList<Double[]> findEuclidianDistances(ArrayList<Double> this_test_example, int row_index) {
+		ArrayList<Double[]> distances = new ArrayList<Double[]>();
 
-		for(int i = 0; this_training_example.size(); i++) {
-			ArrayList<Double> this_training_example = training_examples.get(row_index);
+		for(int i = 0; i < training_examples.size(); i++) {
+			ArrayList<Double> this_training_example = training_examples.get(i);
 			Double distance = findEuclidianDistance(this_training_example, this_test_example);
-			distances.add(distance);
+			Double[] distance_array = new Double[]{distance, Double.valueOf(i)};
+			distances.add(distance_array);
 		}
 
 		return distances;
@@ -133,15 +137,65 @@ class KNNClassifier {
 		}
 
 		for(int i = 0; i < differences.size(); i++) {
-			differences.set(i, differences.get(i) ^ 2);
+			differences.set(i, Math.pow(differences.get(i), 2));
 		}
 
 		double totalDifference = 0;
 
-		for(int i = 0; i < difference.size(); i++) {
-			totalDifference += differnce.get(i);
+		for(int i = 0; i < differences.size(); i++) {
+			totalDifference += differences.get(i);
 		}
 
 		return Math.sqrt(totalDifference);
 	}
+
+	/* find nearest neighbours */
+	private ArrayList<Double[]> find_nn_indicies(ArrayList<Double[]> distances) {
+		QuickSort sorted = new QuickSort();
+
+		sorted.sort(distances);
+
+		ArrayList<Double[]> nearest_neighbours = new ArrayList<Double[]>();
+
+		for(int i = 0; i < k; i++) {
+			nearest_neighbours.add(distances.get(i));
+		}
+
+		return nearest_neighbours;
+	}
+
+	/* make prediction using k */
+	private String make_prediction(ArrayList<Double[]> sorted_with_indicies) {
+		ArrayList<Integer> original_indicies = new ArrayList<Integer>();
+
+		for(int i = 0; i < sorted_with_indicies.size(); i++) {
+			original_indicies.add(sorted_with_indicies.get(i)[1].intValue());
+		}
+
+		ArrayList<String> nn_class_labels = new ArrayList<String>();
+
+		for(Integer nn_index : original_indicies) {
+			nn_class_labels.add(training_labels.get(nn_index));
+		}
+
+		return mode(nn_class_labels);
+	}
+
+	/* find mode to calculate winning class */
+	private String mode(ArrayList<String> nn_class_labels) { 
+ 		Map<String, Long> occurrences = nn_class_labels.stream().collect(Collectors.groupingBy(w -> w, Collectors.counting()));
+
+ 		long largestOccurrence = 0;
+ 		String prediction = "";
+
+ 		for (String name : occurrences.keySet()) {
+ 			if(largestOccurrence < occurrences.get(name)) {
+ 				prediction = name;
+ 				largestOccurrence = occurrences.get(name);
+ 			}
+ 		}
+
+ 		return prediction;
+	}
+
 }
